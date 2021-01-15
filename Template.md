@@ -174,6 +174,97 @@ Este valores representam os conteúdos de memória lidos pelo programa, que não
 <div style="page-break-after: always"></div>
 
 
+## 7 Vulnerabilidades Encriptação - Análise de Frequência
+Nesta tarefa foi nos atribuido um texto cifrado, utilizando uma cifra de substituição mono-alfabética, ou seja, cada letra no texto cifrado é substituido pela mesma letra da cifra.
+Sabendo que o texto original foi escrito na lingua portuguesa e tendo a análise de frequência da ligua portuguesa (ver figura 1), desenvolvemos um programa para analisar a frequência no texto cifrado.
+
+```c
+/*contagem_letras.c*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int argc,char** argv)
+{
+  // Get filename
+	FILE *arq;
+	char filename[50];
+	scanf("%s", filename);
+	printf("%s\n", filename);
+	arq = fopen(filename, "r");
+	char nextline[1024];
+	
+  // Check if file is opened
+	if (arq == NULL)
+	{
+	   	printf("File not openned\n");
+    		return 0;
+	}
+
+  // Count of apperances of each letter 
+	int counts[26] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  // List of characters, according to dictionary
+	char abc[26]= {'a','b','c','d','e','f','g','h','i','j','l','k','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
+	
+	while (fgets(nextline, sizeof(nextline), arq)){
+		if (strlen(nextline) < 1)
+			continue;
+		for(int i = 0; i < strlen(nextline); i++){
+			if(nextline[i] != '\0')
+			{
+				for(int j = 0; j < 26; j++){
+					if(nextline[i] == abc[j]){
+                        // In every letter found, add 1 to the count
+						counts[j] = counts[j] + 1;
+					}
+				}
+			}	
+		}
+	} 
+	// Close file
+	fclose(arq);
+	printf("\n\n");
+
+  // Print
+	for(int i = 0; i < 26 ; i++){
+		printf("Letra %c: %d\n", abc[i], counts[i]);
+	}
+
+}
+```
+
+<p float="center">
+  <img src="analise_freq_tab_pt.png" width="400" height="400" >
+  <img src="analise_freq_tab.png" width="400" height="400">
+  <figcaption float="left">Figura 1 - Tabela da Análise de Frequência PT</figcaption>
+  <figcaption float="rigth">   Figura 2 - Tabela da Análise de Frequência Texto Cifrado</figcaption>
+</p>
+<center>
+
+  <img src="analisefrequencia.png">
+  
+  <b>Figura 3 - Análise de Frequência Texto Cifrado</b><br>
+
+</center>
+
+Através desta análise conseguimos tirar algumas conclusões:
+* A letra com maior frequência é o 'r', na lingua portuguesa é o 'a', ou seja, o 'r' corresponde ao 'a'.
+* A letra 'u' e 'z' não tem qualquer aparição no texto, podendo assim corresponder ao 'k', 'y' e 'z'.
+
+* Depois de fazer algumas substiuições pelas chaves acima, conseguimos perceber o conteúdo da primeira frase "luis vaz de camoes", o que nos permitiu descobrir que 'o', coincidia com 'l', o 'p' com 'u', o 's' com o 'i', o 'e' com o 's', 'k' com 'z' e assim por diante.
+
+* Assim conseguimos perceber a seguinte chave:
+rdajhgnvsf_obiwctqelpk_myx (o 'z' e o 'u' não aparecem portanto assim não podemos incluir nesta fase):
+'rdajhgnvsfzobiwctqelpkumyx'
+'rdajhgnvsfuobiwctqelpkzmyx',
+correspondendo ao abcedário, 'abcdefghijklmnopqrstuvwxyz'
+Usamos o comando 'sha512sum ficheiro.txt', no entanto não conseguimos verificar qual é a chave certa.
+
+
+<div style="page-break-after: always"></div>
+
 ##  Referências
  
   1. [The Linux Command Line](https://linuxcommand.org/)
