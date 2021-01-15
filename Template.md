@@ -259,7 +259,8 @@ Através desta análise conseguimos tirar algumas conclusões:
 rdajhgnvsf_obiwctqelpk_myx (o 'z' e o 'u' não aparecem portanto assim não podemos incluir nesta fase):
 'rdajhgnvsfzobiwctqelpkumyx'
 'rdajhgnvsfuobiwctqelpkzmyx',
-correspondendo ao abcedário, 'abcdefghijklmnopqrstuvwxyz'
+correspondendo ao abcedário, 'abcdefghijklmnopqrstuvwxyz'.
+
 Usamos o comando 'sha512sum ficheiro.txt', no entanto não conseguimos verificar qual é a chave certa.
 
 
